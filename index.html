@@ -23,7 +23,7 @@
         <div class="hdr-brand">🌿 Flowra</div>
         <div class="hdr-hi" id="greet-name">Hallo</div>
       </div>
-      <div id="user-chip" class="user-chip" onclick="showGate()">👤 ...</div>
+      <div id="user-chip" class="user-chip" onclick="renameUser()">👤 ...</div>
     </div>
     <div class="scroll" id="plant-list"></div>
   </div>
@@ -67,8 +67,8 @@
   </nav>
 </div>
 
-<!-- GATE: Wer gießt? (Profilauswahl) -->
-<div class="gate" id="gate">
+<!-- GATE: Willkommen (Namenseingabe beim ersten Start) -->
+<div class="gate hidden" id="gate">
   <span class="gate-deco d1">🌿</span>
   <span class="gate-deco d2">🌸</span>
   <span class="gate-deco d3">🪴</span>
@@ -76,21 +76,11 @@
   <span class="gate-deco d5">🌷</span>
   <div class="gate-inner">
     <div class="gate-brand">🌿 Flowra</div>
-    <div class="gate-q">Wer gießt heute?</div>
-    <div class="gate-sub">Wähle dein Profil 🌱</div>
-    <div class="gate-grid" id="gate-grid"></div>
-  </div>
-</div>
-
-<!-- PIN-Pad -->
-<div class="overlay pinpad-ov" id="ov-pin" onclick="closeOverlay('ov-pin',event)">
-  <div class="pinpad">
-    <div class="pin-avatar" id="pin-avatar">👤</div>
-    <div class="pin-name" id="pin-name">Profil</div>
-    <div class="pin-hint" id="pin-hint">Gib deinen Code ein</div>
-    <div class="pin-dots" id="pin-dots"></div>
-    <div class="pin-keys" id="pin-keys"></div>
-    <button class="pin-cancel" onclick="closePin()">Abbrechen</button>
+    <div class="gate-q">Willkommen!</div>
+    <div class="gate-sub">Wie heißt du? 🌱</div>
+    <input class="gate-input" id="gate-name" type="text" placeholder="Dein Name" autocomplete="off"
+           onkeydown="if(event.key==='Enter')finishWelcome()">
+    <button class="gate-btn" onclick="finishWelcome()">Los geht's 🌿</button>
   </div>
 </div>
 
@@ -142,16 +132,6 @@
       <textarea class="finput" id="f-notes" rows="2" placeholder="Optionale Notizen..."></textarea>
     </div>
     <button class="btn btn-primary" onclick="savePlant()">Speichern</button>
-  </div>
-</div>
-
-<!-- Sheet: User Switcher -->
-<div class="overlay" id="ov-user" onclick="closeOverlay('ov-user',event)">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Benutzer</div>
-    <div id="user-list"></div>
-    <button class="btn btn-primary" style="margin-top:6px" onclick="addUser()">+ Neuer Benutzer</button>
   </div>
 </div>
 

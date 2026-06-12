@@ -1,41 +1,11 @@
 // ── DATA ──────────────────────────────────────────────────────
-const KEY = 'flowra_v1';
-
-const SEED = [
-  {name:'Aloe Vera',bestLocation:'Balkon',currentLocation:'Balkon',purchasedDate:'2026-05-27',wateringInterval:14,lastWatered:'2026-06-07',fertilizingInterval:49,lastFertilized:null,notes:'die große'},
-  {name:'Aloe Vera',bestLocation:'Balkon',currentLocation:'SZ Fenster',purchasedDate:'2026-05-29',wateringInterval:14,lastWatered:'2026-06-07',fertilizingInterval:49,lastFertilized:null,notes:''},
-  {name:'Bogenhanf',bestLocation:'Südfenster / Westfenster',currentLocation:'Bad Spiegel',purchasedDate:'',wateringInterval:21,lastWatered:'2026-05-29',fertilizingInterval:49,lastFertilized:null,notes:''},
-  {name:'Bogenhanf',bestLocation:'Südfenster / Westfenster',currentLocation:'Regal WZ',purchasedDate:'',wateringInterval:21,lastWatered:'2026-05-30',fertilizingInterval:49,lastFertilized:null,notes:'komplett antrocknen lassen'},
-  {name:'Dieffenbachie',bestLocation:'Ostfenster / Westfenster',currentLocation:'Nordfenster',purchasedDate:'2026-06-08',wateringInterval:7,lastWatered:'2026-06-08',fertilizingInterval:28,lastFertilized:null,notes:''},
-  {name:'Dreimasterblume',bestLocation:'Südfenster / Westfenster',currentLocation:'Badfenster',purchasedDate:'2026-05-28',wateringInterval:6,lastWatered:'2026-06-08',fertilizingInterval:21,lastFertilized:null,notes:'Stecklinge'},
-  {name:'Dreimasterblume',bestLocation:'Südfenster / Westfenster',currentLocation:'Badfenster 2',purchasedDate:'2026-05-28',wateringInterval:6,lastWatered:'2026-06-08',fertilizingInterval:21,lastFertilized:null,notes:'Stecklinge'},
-  {name:'Dreimasterblume',bestLocation:'Südfenster / Westfenster',currentLocation:'SZ Schrank',purchasedDate:'2026-05-28',wateringInterval:6,lastWatered:'2026-06-08',fertilizingInterval:21,lastFertilized:null,notes:'Stecklinge'},
-  {name:'Dreimasterblume',bestLocation:'Südfenster / Westfenster',currentLocation:'SZ Fenster',purchasedDate:'2026-05-28',wateringInterval:6,lastWatered:'2026-06-08',fertilizingInterval:21,lastFertilized:null,notes:'Stecklinge'},
-  {name:'Grünlilie',bestLocation:'Westfenster',currentLocation:'Regal WZ',purchasedDate:'2026-05-27',wateringInterval:7,lastWatered:'2026-06-08',fertilizingInterval:21,lastFertilized:null,notes:''},
-  {name:'Kakteen / Sukkulenten',bestLocation:'Südfenster / Westfenster',currentLocation:'SZ Fenster',purchasedDate:'',wateringInterval:21,lastWatered:'2026-05-29',fertilizingInterval:49,lastFertilized:null,notes:'die kleinen Dinger'},
-  {name:'Kaktus',bestLocation:'Südfenster / Westfenster',currentLocation:'SZ Fenster',purchasedDate:'',wateringInterval:21,lastWatered:'2026-05-30',fertilizingInterval:49,lastFertilized:null,notes:''},
-  {name:'Monstera',bestLocation:'Westfenster',currentLocation:'WZ Fenster',purchasedDate:'2026-05-30',wateringInterval:10,lastWatered:'2026-06-05',fertilizingInterval:14,lastFertilized:null,notes:''},
-  {name:'Wüstenkohl',bestLocation:'Südfenster / Westfenster',currentLocation:'SZ Fenster',purchasedDate:'',wateringInterval:14,lastWatered:'2026-06-03',fertilizingInterval:49,lastFertilized:null,notes:''},
-  {name:'Yucca',bestLocation:'Südfenster',currentLocation:'SZ Fenster',purchasedDate:'',wateringInterval:14,lastWatered:'2026-06-01',fertilizingInterval:35,lastFertilized:null,notes:'kleine'},
-  {name:'Yucca',bestLocation:'Südfenster',currentLocation:'SZ Ecke',purchasedDate:'2026-06-03',wateringInterval:14,lastWatered:'2026-06-03',fertilizingInterval:35,lastFertilized:null,notes:'mittlere in der Ecke'},
-];
+const KEY = 'flowra_v2';
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
 
-// Bring older saved data up to the current schema (rename + plant ownership)
-function migrate(s){
-  if(s.users)s.users.forEach(u=>{if(u.name==='Freundin')u.name='Clara';});
-  if(s.plants)s.plants.forEach(p=>{if(!p.ownerId)p.ownerId='u1';});
-  return s;
-}
-
 function initState(){
-  try{const r=localStorage.getItem(KEY);if(r)return migrate(JSON.parse(r));}catch(e){}
-  return{
-    activeUserId:'u1',
-    users:[{id:'u1',name:'Ludwig',avatar:'🧑'},{id:'u2',name:'Clara',avatar:'👩'}],
-    plants:SEED.map(p=>({...p,id:uid(),ownerId:'u1',photos:[]}))
-  };
+  try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}
+  return{ user:null, plants:[] };   // user:null -> Willkommens-Screen
 }
 
 let S=initState();
@@ -110,11 +80,9 @@ function showView(name){
 }
 
 // ── PLANT LIST ────────────────────────────────────────────────
-function myPlants(){return S.plants.filter(p=>p.ownerId===S.activeUserId);}
-
 function renderList(){
   const c=document.getElementById('plant-list');
-  const mine=myPlants();
+  const mine=S.plants;
   if(!mine.length){
     c.innerHTML=`<div class="empty"><div class="empty-icon">🌱</div><h3>Noch keine Pflanzen</h3><p>Tippe unten auf <b>+</b>, um deine erste Pflanze hinzuzufügen.</p></div>`;
     return;
@@ -260,7 +228,7 @@ function savePlant(){
     notes:document.getElementById('f-notes').value.trim(),
   };
   if(_editId){const p=S.plants.find(x=>x.id===_editId);if(p)Object.assign(p,d);}
-  else{S.plants.push({...d,id:uid(),ownerId:S.activeUserId,photos:[]});}
+  else{S.plants.push({...d,id:uid(),photos:[]});}
   persist();
   document.getElementById('ov-plant').classList.remove('open');
   if(_editId){showPlant(_editId);toast('Gespeichert!');}
@@ -303,147 +271,46 @@ async function previewImg(photoId){
 }
 function closeImgPreview(){document.getElementById('img-prev').classList.remove('open');}
 
-// ── GATE: WER GIESST? ─────────────────────────────────────────
-function renderGate(){
-  const grid=document.getElementById('gate-grid');
-  grid.innerHTML=S.users.map(u=>{
-    const n=S.plants.filter(p=>p.ownerId===u.id).length;
-    const lock=u.pin?'<div class="gate-lock">🔒</div>':'';
-    return `<div class="gate-card" onclick="pickProfile('${u.id}')">
-      <div class="gate-av">${u.avatar||'👤'}${lock}</div>
-      <div class="gate-nm">${esc(u.name)}</div>
-      <div class="gate-cnt">${n} 🌿</div>
-    </div>`;
-  }).join('')+`<div class="gate-card" onclick="addProfileFromGate()">
-      <div class="gate-av gate-av-add">+</div>
-      <div class="gate-nm">Neu</div>
-      <div class="gate-cnt">&nbsp;</div>
-    </div>`;
+// ── WILLKOMMEN (Name beim ersten Start) ───────────────────────
+function showWelcome(){
+  document.getElementById('gate').classList.remove('hidden');
+  setTimeout(()=>{const i=document.getElementById('gate-name');if(i)i.focus();},300);
 }
 
-function showGate(){renderGate();document.getElementById('gate').classList.remove('hidden');}
-
-function pickProfile(id){
-  const u=S.users.find(x=>x.id===id);if(!u)return;
-  if(u.pin)openPin(u);else enterAs(id);
-}
-
-function enterAs(id){
-  S.activeUserId=id;persist();renderChip();
-  closePin();
+function finishWelcome(){
+  const inp=document.getElementById('gate-name');
+  const name=inp.value.trim();
+  if(!name){inp.classList.add('err');inp.focus();setTimeout(()=>inp.classList.remove('err'),450);return;}
+  S.user={name,avatar:'🌱'};persist();renderChip();
   document.getElementById('gate').classList.add('hidden');
-  showView('home');
+  showView('home');toast('Willkommen, '+name+'! 🌿');
 }
 
-function addProfileFromGate(){
-  const name=prompt('Name des neuen Profils:');
-  if(!name||!name.trim())return;
-  const avs=['🌺','🌸','🍀','🌻','🌼','🌷','🌙','⭐'];
-  const u={id:uid(),name:name.trim(),avatar:avs[S.users.length%avs.length]};
-  S.users.push(u);persist();renderGate();
-}
-
-// ── PIN-PAD ───────────────────────────────────────────────────
-let _pinUser=null,_pinEntry='';
-
-function openPin(u){
-  _pinUser=u;_pinEntry='';
-  document.getElementById('pin-avatar').textContent=u.avatar||'👤';
-  document.getElementById('pin-name').textContent=u.name;
-  const hint=document.getElementById('pin-hint');
-  hint.textContent='Gib deinen Code ein';hint.classList.remove('err');
-  buildPinKeys();renderPinDots();
-  document.getElementById('ov-pin').classList.add('open');
-}
-function closePin(){_pinUser=null;_pinEntry='';document.getElementById('ov-pin').classList.remove('open');}
-function buildPinKeys(){
-  const keys=['1','2','3','4','5','6','7','8','9','','0','⌫'];
-  document.getElementById('pin-keys').innerHTML=keys.map(k=>{
-    if(k==='')return '<div class="pin-key pin-key-empty"></div>';
-    if(k==='⌫')return '<div class="pin-key pin-back" onclick="pinDel()">⌫</div>';
-    return `<div class="pin-key" onclick="pinTap('${k}')">${k}</div>`;
-  }).join('');
-}
-function renderPinDots(){
-  let h='';for(let i=0;i<4;i++)h+=`<div class="pin-dot ${i<_pinEntry.length?'on':''}"></div>`;
-  document.getElementById('pin-dots').innerHTML=h;
-}
-function pinTap(d){
-  if(_pinEntry.length>=4)return;
-  _pinEntry+=d;renderPinDots();
-  if(_pinEntry.length===4)setTimeout(checkPin,160);
-}
-function pinDel(){_pinEntry=_pinEntry.slice(0,-1);renderPinDots();}
-function checkPin(){
-  if(_pinUser&&_pinEntry===_pinUser.pin){enterAs(_pinUser.id);toast('Willkommen, '+_pinUser.name+'! 🌿');}
-  else{
-    const hint=document.getElementById('pin-hint');
-    hint.textContent='Falscher Code 😅';hint.classList.add('err');
-    const pad=document.querySelector('.pinpad');pad.classList.add('shake');
-    setTimeout(()=>pad.classList.remove('shake'),420);
-    _pinEntry='';renderPinDots();
-  }
-}
-
-// ── USERS ─────────────────────────────────────────────────────
+// ── PROFIL (ein Profil pro Gerät) ─────────────────────────────
 function renderChip(){
-  const u=S.users.find(x=>x.id===S.activeUserId)||S.users[0];
-  document.getElementById('user-chip').textContent=(u.avatar||'👤')+' '+u.name;
+  const u=S.user;if(!u)return;
+  document.getElementById('user-chip').textContent=(u.avatar||'🌱')+' '+u.name;
   const g=document.getElementById('greet-name');
   if(g)g.textContent='Hallo, '+u.name;
 }
 
-function openUserOverlay(){
-  const list=document.getElementById('user-list');
-  list.innerHTML=S.users.map(u=>`
-    <div class="user-opt ${u.id===S.activeUserId?'sel':''}" onclick="selectUser('${u.id}')">
-      <div class="u-avatar">${u.avatar||'👤'}</div>
-      <span>${esc(u.name)}</span>
-      ${u.id===S.activeUserId?'<span style="margin-left:auto;color:var(--green-mid)">✓</span>':''}
-    </div>`).join('');
-  document.getElementById('ov-user').classList.add('open');
-}
-
-function selectUser(id){
-  S.activeUserId=id;persist();renderChip();renderList();
-  document.getElementById('ov-user').classList.remove('open');
-  const u=S.users.find(x=>x.id===id);
-  toast('Profil: '+(u?u.name:''));
-}
-
-function addUser(){
-  document.getElementById('ov-user').classList.remove('open');
-  const name=prompt('Name des neuen Benutzers:');
-  if(!name||!name.trim())return;
-  const avs=['🌺','🌸','🍀','🌻','🌼','🌷','🌙','⭐'];
-  const u={id:uid(),name:name.trim(),avatar:avs[S.users.length%avs.length]};
-  S.users.push(u);persist();
-  selectUser(u.id);
+function renameUser(){
+  const name=prompt('Wie heißt du?',S.user?S.user.name:'');
+  if(name===null||!name.trim())return;
+  S.user.name=name.trim();persist();renderChip();
+  if(document.getElementById('view-settings').classList.contains('active'))renderSettings();
+  toast('Name geändert');
 }
 
 // ── SETTINGS ──────────────────────────────────────────────────
 function renderSettings(){
   document.getElementById('settings-body').innerHTML=`
-    <div class="sec">Benutzer</div>
+    <div class="sec">Profil</div>
     <div class="s-section">
-      ${S.users.map(u=>{
-        const n=S.plants.filter(p=>p.ownerId===u.id).length;
-        return `<div class="s-item">
-          <span>${u.avatar} ${esc(u.name)} <span class="s-val">· ${n} 🌿</span></span>
-          ${S.users.length>1&&u.id!==S.activeUserId
-            ?`<button onclick="removeUser('${u.id}')" style="background:none;border:none;color:#c62828;font-size:13px;cursor:pointer;font-weight:600">Entfernen</button>`
-            :`<span class="s-val">${u.id===S.activeUserId?'Aktiv':''}</span>`}
-        </div>`;}).join('')}
-      <div class="s-item" onclick="addUserFromSettings()" style="color:var(--green-mid)">
-        <span>+ Benutzer hinzufügen</span>
+      <div class="s-item" onclick="renameUser()">
+        <span>${S.user?S.user.avatar+' '+esc(S.user.name):'—'}</span>
+        <span class="s-val">Name ändern →</span>
       </div>
-    </div>
-    <div class="sec">Sicherheit 🔒</div>
-    <div class="s-section">
-      ${S.users.map(u=>`<div class="s-item" onclick="managePin('${u.id}')">
-        <span>${u.avatar} ${esc(u.name)}</span>
-        <span class="s-val">${u.pin?'🔒 Code aktiv':'Kein Code'}</span>
-      </div>`).join('')}
     </div>
     <div class="sec">Daten</div>
     <div class="s-section">
@@ -452,55 +319,17 @@ function renderSettings(){
     </div>
     <div class="sec">Info</div>
     <div class="s-section">
-      <div class="s-item"><span>Pflanzen (aktuelles Profil)</span><span class="s-val">${myPlants().length}</span></div>
-      <div class="s-item"><span>Pflanzen gesamt</span><span class="s-val">${S.plants.length}</span></div>
-      <div class="s-item"><span>Version</span><span class="s-val">1.2</span></div>
+      <div class="s-item"><span>Pflanzen</span><span class="s-val">${S.plants.length}</span></div>
+      <div class="s-item"><span>Version</span><span class="s-val">2.0</span></div>
     </div>
     <p style="font-size:12px;color:var(--text-muted);text-align:center;padding:16px 0;line-height:1.6">
       Daten werden lokal auf diesem Gerät gespeichert.<br>
-      Jedes Profil (Ludwig / Clara) hat seine eigenen Pflanzen.<br>
-      Der Code ist ein einfacher Schutz fürs Profil – keine echte Verschlüsselung.<br>
       Nutze Export/Import zum Übertragen auf ein anderes Gerät.
     </p>
   `;
 }
 
-function managePin(id){
-  const u=S.users.find(x=>x.id===id);if(!u)return;
-  if(u.pin){
-    if(confirm(`${u.name} hat einen Code.\n\nOK = Code ändern\nAbbrechen = Code entfernen`))setPin(u);
-    else{delete u.pin;persist();renderSettings();toast('Code entfernt');}
-  }else setPin(u);
-}
-function setPin(u){
-  const p=prompt(`4-stelligen Code für ${u.name} festlegen:`);
-  if(p===null)return;
-  if(!/^\d{4}$/.test(p.trim())){alert('Bitte genau 4 Ziffern eingeben.');return;}
-  u.pin=p.trim();persist();renderSettings();toast('Code gesetzt 🔒');
-}
-
-async function removeUser(id){
-  const u=S.users.find(x=>x.id===id);
-  const owned=S.plants.filter(p=>p.ownerId===id);
-  if(!confirm(`Profil "${u?u.name:''}" entfernen?`+(owned.length?`\n\n${owned.length} Pflanze(n) dieses Profils werden ebenfalls gelöscht.`:'')))return;
-  // delete this profile's plants and their photos
-  for(const p of owned){for(const pid of(p.photos||[]))await dbDel(pid);}
-  S.plants=S.plants.filter(p=>p.ownerId!==id);
-  S.users=S.users.filter(u=>u.id!==id);
-  if(S.activeUserId===id)S.activeUserId=S.users[0]?.id;
-  persist();renderChip();renderSettings();
-}
-
-function addUserFromSettings(){
-  const name=prompt('Name des neuen Benutzers:');
-  if(!name||!name.trim())return;
-  const avs=['🌺','🌸','🍀','🌻','🌼','🌷'];
-  const u={id:uid(),name:name.trim(),avatar:avs[S.users.length%avs.length]};
-  S.users.push(u);persist();renderSettings();
-}
-
 async function exportData(){
-  // Export plant data only (photos stay in IndexedDB - device-local)
   const photos=await dbAll();
   const payload=JSON.stringify({...S,_photos:photos});
   if(navigator.share){
@@ -519,13 +348,14 @@ async function importData(){
   if(!txt)return;
   try{
     const parsed=JSON.parse(txt);
-    if(!parsed.plants||!parsed.users)throw new Error('Ungültiges Format');
+    if(!parsed.plants||!parsed.user)throw new Error('Ungültiges Format');
     const photos=parsed._photos||{};
     delete parsed._photos;
     S=parsed;persist();
-    // restore photos to IndexedDB
     for(const[k,v]of Object.entries(photos))await dbPut(k,v);
-    renderChip();showView('home');toast('Daten importiert!');
+    renderChip();
+    document.getElementById('gate').classList.add('hidden');
+    showView('home');toast('Daten importiert!');
   }catch(e){alert('Fehler: '+e.message);}
 }
 
@@ -548,5 +378,9 @@ function toast(msg){
 
 // ── INIT ──────────────────────────────────────────────────────
 renderChip();
-renderList();
-renderGate();
+if(S.user){
+  document.getElementById('gate').classList.add('hidden');
+  renderList();
+}else{
+  showWelcome();
+}

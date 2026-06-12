@@ -171,31 +171,10 @@ textarea.finput{resize:none}
 .gate-brand{font-size:32px;font-weight:800;color:#1b4332;letter-spacing:-.5px;margin-bottom:10px;text-shadow:0 2px 10px rgba(255,255,255,.5)}
 .gate-q{font-size:27px;font-weight:800;color:#15402e;letter-spacing:-.5px}
 .gate-sub{font-size:14px;color:#2d6a4f;font-weight:600;margin-top:7px;margin-bottom:30px;opacity:.85}
-.gate-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:20px 18px;max-width:340px}
-.gate-card{display:flex;flex-direction:column;align-items:center;gap:9px;cursor:pointer;width:96px;transition:transform .15s}
-.gate-card:active{transform:scale(.93)}
-.gate-av{width:90px;height:90px;border-radius:28px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:46px;box-shadow:0 12px 28px rgba(27,67,50,.22);position:relative;border:3px solid rgba(255,255,255,.75);transition:transform .15s,box-shadow .15s}
-.gate-card:active .gate-av{box-shadow:0 6px 14px rgba(27,67,50,.2)}
-.gate-av-add{background:rgba(255,255,255,.4);border:3px dashed #2d6a4f;color:#2d6a4f;font-size:42px;font-weight:300}
-.gate-lock{position:absolute;bottom:-5px;right:-5px;background:#fff;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 3px 9px rgba(27,67,50,.22)}
-.gate-nm{font-size:16px;font-weight:700;color:#1b4332}
-.gate-cnt{font-size:12px;font-weight:600;color:#2d6a4f;opacity:.8;margin-top:-5px}
-
-/* PIN-PAD */
-.pinpad-ov{align-items:center;justify-content:center;z-index:650}
-.pinpad{background:#fff;border-radius:28px;padding:26px 24px 18px;width:300px;max-width:88vw;text-align:center;animation:gatePop .35s cubic-bezier(.2,.8,.3,1.4)}
-.pin-avatar{width:70px;height:70px;border-radius:50%;background:var(--green-pale);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 8px}
-.pin-name{font-size:19px;font-weight:800;color:var(--text)}
-.pin-hint{font-size:13px;color:var(--text-muted);font-weight:600;margin-top:3px;transition:color .2s}
-.pin-hint.err{color:#c62828}
-.pin-dots{display:flex;justify-content:center;gap:14px;margin:18px 0 22px}
-.pin-dot{width:14px;height:14px;border-radius:50%;background:var(--border);transition:transform .15s,background .15s}
-.pin-dot.on{background:var(--green-mid);transform:scale(1.18)}
-.pin-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.pin-key{height:58px;border-radius:18px;background:var(--green-pale);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--green-dark);cursor:pointer;user-select:none;transition:transform .1s,background .1s}
-.pin-key:active{transform:scale(.9);background:#c3ead0}
-.pin-key-empty{background:none;pointer-events:none}
-.pin-back{background:none;font-size:22px;color:var(--text-muted)}
-.pin-cancel{margin-top:16px;background:none;border:none;color:var(--text-muted);font-size:14px;font-weight:600;cursor:pointer;padding:6px}
-.pinpad.shake{animation:shake .42s}
+.gate-input{width:250px;max-width:80vw;margin-top:6px;padding:14px 18px;border:2px solid rgba(255,255,255,.7);border-radius:16px;font-size:18px;font-weight:600;text-align:center;background:rgba(255,255,255,.92);color:#1b4332;outline:none;font-family:inherit;box-shadow:0 8px 22px rgba(27,67,50,.15)}
+.gate-input::placeholder{color:#7ba894;font-weight:500}
+.gate-input:focus{border-color:#fff;background:#fff}
+.gate-input.err{border-color:#e57373;animation:shake .42s}
+.gate-btn{margin-top:18px;padding:13px 32px;border:none;border-radius:16px;background:#1b4332;color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(27,67,50,.25);transition:transform .12s}
+.gate-btn:active{transform:scale(.95)}
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
