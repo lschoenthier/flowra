@@ -303,6 +303,88 @@ async function previewImg(photoId){
 }
 function closeImgPreview(){document.getElementById('img-prev').classList.remove('open');}
 
+// ── GATE: WER GIESST? ─────────────────────────────────────────
+function renderGate(){
+  const grid=document.getElementById('gate-grid');
+  grid.innerHTML=S.users.map(u=>{
+    const n=S.plants.filter(p=>p.ownerId===u.id).length;
+    const lock=u.pin?'<div class="gate-lock">🔒</div>':'';
+    return `<div class="gate-card" onclick="pickProfile('${u.id}')">
+      <div class="gate-av">${u.avatar||'👤'}${lock}</div>
+      <div class="gate-nm">${esc(u.name)}</div>
+      <div class="gate-cnt">${n} 🌿</div>
+    </div>`;
+  }).join('')+`<div class="gate-card" onclick="addProfileFromGate()">
+      <div class="gate-av gate-av-add">+</div>
+      <div class="gate-nm">Neu</div>
+      <div class="gate-cnt">&nbsp;</div>
+    </div>`;
+}
+
+function showGate(){renderGate();document.getElementById('gate').classList.remove('hidden');}
+
+function pickProfile(id){
+  const u=S.users.find(x=>x.id===id);if(!u)return;
+  if(u.pin)openPin(u);else enterAs(id);
+}
+
+function enterAs(id){
+  S.activeUserId=id;persist();renderChip();
+  closePin();
+  document.getElementById('gate').classList.add('hidden');
+  showView('home');
+}
+
+function addProfileFromGate(){
+  const name=prompt('Name des neuen Profils:');
+  if(!name||!name.trim())return;
+  const avs=['🌺','🌸','🍀','🌻','🌼','🌷','🌙','⭐'];
+  const u={id:uid(),name:name.trim(),avatar:avs[S.users.length%avs.length]};
+  S.users.push(u);persist();renderGate();
+}
+
+// ── PIN-PAD ───────────────────────────────────────────────────
+let _pinUser=null,_pinEntry='';
+
+function openPin(u){
+  _pinUser=u;_pinEntry='';
+  document.getElementById('pin-avatar').textContent=u.avatar||'👤';
+  document.getElementById('pin-name').textContent=u.name;
+  const hint=document.getElementById('pin-hint');
+  hint.textContent='Gib deinen Code ein';hint.classList.remove('err');
+  buildPinKeys();renderPinDots();
+  document.getElementById('ov-pin').classList.add('open');
+}
+function closePin(){_pinUser=null;_pinEntry='';document.getElementById('ov-pin').classList.remove('open');}
+function buildPinKeys(){
+  const keys=['1','2','3','4','5','6','7','8','9','','0','⌫'];
+  document.getElementById('pin-keys').innerHTML=keys.map(k=>{
+    if(k==='')return '<div class="pin-key pin-key-empty"></div>';
+    if(k==='⌫')return '<div class="pin-key pin-back" onclick="pinDel()">⌫</div>';
+    return `<div class="pin-key" onclick="pinTap('${k}')">${k}</div>`;
+  }).join('');
+}
+function renderPinDots(){
+  let h='';for(let i=0;i<4;i++)h+=`<div class="pin-dot ${i<_pinEntry.length?'on':''}"></div>`;
+  document.getElementById('pin-dots').innerHTML=h;
+}
+function pinTap(d){
+  if(_pinEntry.length>=4)return;
+  _pinEntry+=d;renderPinDots();
+  if(_pinEntry.length===4)setTimeout(checkPin,160);
+}
+function pinDel(){_pinEntry=_pinEntry.slice(0,-1);renderPinDots();}
+function checkPin(){
+  if(_pinUser&&_pinEntry===_pinUser.pin){enterAs(_pinUser.id);toast('Willkommen, '+_pinUser.name+'! 🌿');}
+  else{
+    const hint=document.getElementById('pin-hint');
+    hint.textContent='Falscher Code 😅';hint.classList.add('err');
+    const pad=document.querySelector('.pinpad');pad.classList.add('shake');
+    setTimeout(()=>pad.classList.remove('shake'),420);
+    _pinEntry='';renderPinDots();
+  }
+}
+
 // ── USERS ─────────────────────────────────────────────────────
 function renderChip(){
   const u=S.users.find(x=>x.id===S.activeUserId)||S.users[0];
@@ -356,6 +438,13 @@ function renderSettings(){
         <span>+ Benutzer hinzufügen</span>
       </div>
     </div>
+    <div class="sec">Sicherheit 🔒</div>
+    <div class="s-section">
+      ${S.users.map(u=>`<div class="s-item" onclick="managePin('${u.id}')">
+        <span>${u.avatar} ${esc(u.name)}</span>
+        <span class="s-val">${u.pin?'🔒 Code aktiv':'Kein Code'}</span>
+      </div>`).join('')}
+    </div>
     <div class="sec">Daten</div>
     <div class="s-section">
       <div class="s-item" onclick="exportData()"><span>Daten exportieren</span><span class="s-val">Teilen →</span></div>
@@ -365,14 +454,29 @@ function renderSettings(){
     <div class="s-section">
       <div class="s-item"><span>Pflanzen (aktuelles Profil)</span><span class="s-val">${myPlants().length}</span></div>
       <div class="s-item"><span>Pflanzen gesamt</span><span class="s-val">${S.plants.length}</span></div>
-      <div class="s-item"><span>Version</span><span class="s-val">1.1</span></div>
+      <div class="s-item"><span>Version</span><span class="s-val">1.2</span></div>
     </div>
     <p style="font-size:12px;color:var(--text-muted);text-align:center;padding:16px 0;line-height:1.6">
       Daten werden lokal auf diesem Gerät gespeichert.<br>
       Jedes Profil (Ludwig / Clara) hat seine eigenen Pflanzen.<br>
+      Der Code ist ein einfacher Schutz fürs Profil – keine echte Verschlüsselung.<br>
       Nutze Export/Import zum Übertragen auf ein anderes Gerät.
     </p>
   `;
+}
+
+function managePin(id){
+  const u=S.users.find(x=>x.id===id);if(!u)return;
+  if(u.pin){
+    if(confirm(`${u.name} hat einen Code.\n\nOK = Code ändern\nAbbrechen = Code entfernen`))setPin(u);
+    else{delete u.pin;persist();renderSettings();toast('Code entfernt');}
+  }else setPin(u);
+}
+function setPin(u){
+  const p=prompt(`4-stelligen Code für ${u.name} festlegen:`);
+  if(p===null)return;
+  if(!/^\d{4}$/.test(p.trim())){alert('Bitte genau 4 Ziffern eingeben.');return;}
+  u.pin=p.trim();persist();renderSettings();toast('Code gesetzt 🔒');
 }
 
 async function removeUser(id){
@@ -445,3 +549,4 @@ function toast(msg){
 // ── INIT ──────────────────────────────────────────────────────
 renderChip();
 renderList();
+renderGate();
